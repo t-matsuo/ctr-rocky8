@@ -1,0 +1,144 @@
+FROM rockylinux/rockylinux:8
+
+ENV HOME=/root
+
+COPY ./kubernetes.repo /etc/yum.repos.d/
+COPY ./fzf /usr/local/bin/fzf
+COPY ./k3d/* /usr/local/bin/
+COPY ./pause /usr/local/bin/
+COPY ./cocker /usr/local/bin/
+
+RUN yum -y update && yum -y install epel-release
+
+# add Azure and VSCode repository
+RUN rpm --import https://packages.microsoft.com/keys/microsoft.asc
+RUN echo -e "[azure-cli]\nname=Azure CLI\nbaseurl=https://packages.microsoft.com/yumrepos/azure-cli\nenabled=1\ngpgcheck=1\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/azure-cli.repo
+RUN echo -e "[code]\nname=Visual Studio Code\nbaseurl=https://packages.microsoft.com/yumrepos/vscode\nenabled=1\ngpgcheck=1\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/vscode.repo
+
+# add Google Cloud SDK repository
+RUN echo -e "[google-cloud-sdk]\nname=Google Cloud SDK\nbaseurl=https://packages.cloud.google.com/yum/repos/cloud-sdk-el8-x86_64\nenabled=1\ngpgcheck=1\nrepo_gpgcheck=1\ngpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg\n       https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg" > /etc/yum.repos.d/google-cloud-sdk.repo
+
+# install docker cli
+RUN rpm -ivh https://download.docker.com/linux/centos/8/x86_64/stable/Packages/docker-ce-cli-20.10.7-3.el8.x86_64.rpm https://download.docker.com/linux/centos/8/x86_64/stable/Packages/docker-scan-plugin-0.8.0-3.el8.x86_64.rpm
+
+# install docker-compose
+RUN curl -L "https://github.com/docker/compose/releases/download/`curl -s https://api.github.com/repos/docker/compose/releases | jq .[].name | grep -v rc | head -1 | sed 's/"//g'`/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+RUN chmod 755 /usr/local/bin/docker-compose
+
+# install tools
+RUN yum install -y vim wget openssh-clients net-tools bind-utils tcpdump iproute iputils ethtool iptables nmap-ncat less screen tmux strace ltrace bash-completion yum-utils kubectl jq stress-ng expect psmisc openssl kbd unzip git
+
+# install helm
+RUN curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+
+# install kubectx kubens
+RUN curl -L -o /usr/local/bin/kubectx https://github.com/ahmetb/kubectx/releases/download/`curl -s https://api.github.com/repos/ahmetb/kubectx/releases | jq .[].name | grep -v rc | head -1 | sed 's/"//g'`/kubectx
+RUN curl -L -o /usr/local/bin/kubens https://github.com/ahmetb/kubectx/releases/download/`curl -s https://api.github.com/repos/ahmetb/kubectx/releases | jq .[].name | grep -v rc | head -1 | sed 's/"//g'`/kubens
+RUN chmod 755 /usr/local/bin/kubectx
+RUN chmod 755 /usr/local/bin/kubens
+RUN curl -L -o /etc/bash_completion.d/kubectx https://github.com/ahmetb/kubectx/raw/master/completion/kubectx.bash
+RUN curl -L -o /etc/bash_completion.d/kubens https://github.com/ahmetb/kubectx/raw/master/completion/kubens.bash
+
+# install k3d
+RUN curl -s https://raw.githubusercontent.com/rancher/k3d/main/install.sh | TAG=v4.4.8 bash
+
+# install hadolint
+RUN curl -L  "https://github.com/hadolint/hadolint/releases/download/`curl -s https://api.github.com/repos/hadolint/hadolint/releases | jq .[].name | grep -v rc | head -1 | sed 's/"//g'`/hadolint-Linux-x86_64" -o /usr/local/bin/hadolint
+RUN chmod 755 /usr/local/bin/hadolint
+
+# install docui
+RUN curl -L "https://github.com/skanehira/docui/releases/download/`curl -s https://api.github.com/repos/skanehira/docui/releases | jq .[].name | grep -v rc | head -1 | sed 's/"//g'`/docui_`curl -s https://api.github.com/repos/skanehira/docui/releases | jq .[].name | grep -v rc | head -1 | sed 's/"//g'`_Linux_x86_64.tar.gz" -o /tmp/docui.tar.gz
+RUN tar zxvf /tmp/docui.tar.gz -O docui > /usr/local/bin/docui
+RUN chmod 755 /usr/local/bin/docui
+RUN rm -f /tmp/docui.tar.gz
+
+# install k9s
+RUN curl -L "https://github.com/derailed/k9s/releases/download/`curl -s https://api.github.com/repos/derailed/k9s/releases | jq .[].name | grep -v rc | head -1 | sed 's/"//g'`/k9s_Linux_x86_64.tar.gz" -o /tmp/k9s.tar.gz
+RUN tar zxvf /tmp/k9s.tar.gz -O k9s > /usr/local/bin/k9s
+RUN chmod 755 /usr/local/bin/k9s
+RUN rm -f /tmp/k9s.tar.gz
+
+# install stern
+RUN curl -L "https://github.com/wercker/stern/releases/download/`curl -s https://api.github.com/repos/wercker/stern/releases | jq .[].name | grep -v rc | head -1 | sed 's/"//g'`/stern_linux_amd64" -o /usr/local/bin/stern
+RUN chmod 755 /usr/local/bin/stern
+
+# install kubeval
+RUN curl -L "https://github.com/instrumenta/kubeval/releases/download/`curl -s https://api.github.com/repos/instrumenta/kubeval/releases | jq .[].name | grep -v rc | head -1 | sed 's/"//g'`/kubeval-linux-amd64.tar.gz" -o /tmp/kubeval.tar.gz
+RUN tar zxvf /tmp/kubeval.tar.gz -O kubeval > /usr/local/bin/kubeval
+RUN chmod 755 /usr/local/bin/kubeval
+RUN rm -f /tmp/kubeval.tar.gz
+
+# install kube-score
+RUN curl -L "https://github.com/zegl/kube-score/releases/download/`curl -s https://api.github.com/repos/zegl/kube-score/releases | jq .[].name | grep -v rc | head -1 | sed 's/"//g'`/kube-score_`curl -s https://api.github.com/repos/zegl/kube-score/releases | jq .[].name | grep -v rc | head -1 | sed 's/"//g' | sed 's/v//g'`_linux_amd64" -o /usr/local/bin/kube-score
+RUN chmod 755 /usr/local/bin/kube-score
+
+# install kube-ps1
+RUN curl -L https://raw.githubusercontent.com/jonmosco/kube-ps1/master/kube-ps1.sh -o /usr/local/bin/kube-ps1.sh
+
+# install crane
+RUN curl -L "https://github.com/google/go-containerregistry/releases/download/`curl -s https://api.github.com/repos/google/go-containerregistry/releases | jq .[].name | grep -v rc | head -1 | sed 's/"//g'`/go-containerregistry_Linux_x86_64.tar.gz"  -o /tmp/crane.tar.gz
+RUN tar zxvf /tmp/crane.tar.gz -O crane > /usr/local/bin/crane
+RUN chmod 755 /usr/local/bin/crane
+RUN rm -f /tmp/crane.tar.gz
+
+# install AWS CLI v2
+RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "/tmp/awscliv2.zip"
+RUN unzip /tmp/awscliv2.zip -d /tmp/
+RUN /tmp/aws/install
+RUN rm -rf /tmp/aws*
+
+# install eksctl
+RUN curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+RUN mv /tmp/eksctl /usr/local/bin
+
+# install awless
+RUN curl -L "https://github.com/wallix/awless/releases/download/v0.1.11/awless-linux-amd64.tar.gz" -o "/tmp/awless.tar.gz"
+RUN tar zxvf /tmp/awless.tar.gz -O awless > /usr/local/bin/awless
+RUN chmod 755 /usr/local/bin/awless
+RUN rm -f /tmp/awless.tar.gz
+
+# install krew
+RUN set -x; cd "$(mktemp -d)"
+RUN curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/latest/download/krew.tar.gz"
+RUN tar zxvf krew.tar.gz
+RUN KREW=./krew-"$(uname | tr '[:upper:]' '[:lower:]')_$(uname -m | sed -e 's/x86_64/amd64/' -e 's/arm.*$/arm/')" && "$KREW" install krew
+RUN echo 'export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"' >> /root/.bashrc
+
+# install krew plugins
+RUN PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH" kubectl krew install neat
+RUN PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH" kubectl krew install access-matrix
+RUN PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH" kubectl krew install cert-manager
+RUN PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH" kubectl krew install ctx
+RUN PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH" kubectl krew install get-all
+RUN PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH" kubectl krew install node-shell
+RUN PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH" kubectl krew install ns
+RUN PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH" kubectl krew install resource-capacity
+RUN PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH" kubectl krew install sniff
+RUN PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH" kubectl krew install view-secret
+
+# my settings
+RUN echo "alias vi='vim'" >> /root/.bashrc
+RUN echo "alias ll='ls -l --color=auto'" >> /root/.bashrc
+RUN echo "alias la='ls -la --color=auto'" >> /root/.bashrc
+RUN echo "alias k='kubectl'" >> /root/.bashrc
+RUN echo "alias ssh='ssh -o ServerAliveInterval=20 -o ServerAliveCountMax=20'" >> /root/.bashrc
+RUN echo "complete -o default -F __start_kubectl k" >> /root/.bashrc
+RUN echo "source /usr/local/bin/kube-ps1.sh" >> /root/.bashrc
+RUN echo "source /usr/share/git-core/contrib/completion/git-prompt.sh" >> /root/.bashrc
+RUN echo -e 'echo $TERM | grep -q "^screen"\nif [ $? -eq 0 ]; then\n   export PS1='\''[\u@\h:$WINDOW:\w$(__git_ps1 " (%s)")]$(kube_ps1)\$ '\''\nelse\n   export PS1='\''[\u@\h:\w$(__git_ps1 " (%s)")]$(kube_ps1)\$ '\''\n   cd $HOME\nfi' >> /root/.bashrc
+RUN echo "kubeoff" >> /root/.bashrc
+RUN echo "escape ^Oo" >> /root/.screenrc
+RUN echo 'shell "/bin/bash"' >> /root/.screenrc
+RUN echo "set background=dark" >> /root/.vimrc
+RUN echo "set pastetoggle=<f2>" >> /root/.vimrc
+RUN echo "set paste" >> /root/.vimrc
+RUN echo "set tabstop=4" >> /root/.vimrc
+RUN cp /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
+RUN kubectl completion bash >> /etc/bash_completion.d/kubectl
+RUN mkdir /root/.kube
+
+# cleanup
+RUN rm -f /root/anaconda-ks.cfg
+RUN yum clean all
+
+CMD ["/usr/local/bin/pause"]
