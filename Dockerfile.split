@@ -8,7 +8,7 @@ COPY ./k3d/* /usr/local/bin/
 COPY ./pause /usr/local/bin/
 COPY ./cocker /usr/local/bin/
 
-RUN yum -y update && yum -y install epel-release
+RUN dnf -y update && dnf -y install epel-release
 
 # add Azure and VSCode repository
 RUN rpm --import https://packages.microsoft.com/keys/microsoft.asc
@@ -26,10 +26,10 @@ RUN curl -L "https://github.com/docker/compose/releases/download/`curl -s https:
 RUN chmod 755 /usr/local/bin/docker-compose
 
 # install tools
-RUN yum install -y vim wget openssh-clients net-tools bind-utils tcpdump iproute iputils ethtool iptables nmap-ncat less screen tmux strace ltrace bash-completion yum-utils kubectl jq stress-ng expect psmisc openssl kbd unzip git passwd socat
+RUN dnf install -y vim wget openssh-clients net-tools bind-utils tcpdump iproute iputils ethtool iptables nmap-ncat less screen tmux strace ltrace bash-completion yum-utils kubectl jq stress-ng expect psmisc openssl kbd unzip git passwd socat
 
 # for japanese
-RUN yum install -y glibc-langpack-ja langpacks-ja.noarch langpacks-en glibc-langpack-en glibc-locale-source
+RUN dnf install -y glibc-langpack-ja langpacks-ja.noarch langpacks-en glibc-langpack-en glibc-locale-source
 RUN localedef -f UTF-8 -i ja_JP ja_JP.UTF-8
 
 # install helm
@@ -147,6 +147,6 @@ RUN mkdir /root/.kube
 
 # cleanup
 RUN rm -f /root/anaconda-ks.cfg
-RUN yum clean all
+RUN dnf clean all
 
 CMD ["/usr/local/bin/pause"]
