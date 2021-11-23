@@ -1,4 +1,4 @@
-FROM rockylinux/rockylinux:8
+FROM rockylinux/rockylinux:8.5
 
 ENV HOME=/root
 
@@ -27,6 +27,10 @@ RUN chmod 755 /usr/local/bin/docker-compose
 
 # install tools
 RUN yum install -y vim wget openssh-clients net-tools bind-utils tcpdump iproute iputils ethtool iptables nmap-ncat less screen tmux strace ltrace bash-completion yum-utils kubectl jq stress-ng expect psmisc openssl kbd unzip git
+
+# for japanese
+RUN yum install -y glibc-langpack-ja langpacks-ja.noarch langpacks-en glibc-langpack-en glibc-locale-source
+RUN localedef -f UTF-8 -i ja_JP ja_JP.UTF-8
 
 # install helm
 RUN curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
