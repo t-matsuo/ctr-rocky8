@@ -141,6 +141,7 @@ RUN echo -e 'echo $TERM | grep -q "^screen"\nif [ $? -eq 0 ]; then\n   export PS
 RUN echo "kubeoff" >> /root/.bashrc
 RUN echo "escape ^Oo" >> /root/.screenrc
 RUN echo 'shell "/bin/bash"' >> /root/.screenrc
+RUN echo 'termcapinfo xterm* ti@:te@' >> /root/.screenrc
 RUN echo "set background=dark" >> /root/.vimrc
 RUN echo "set pastetoggle=<f2>" >> /root/.vimrc
 RUN echo "set paste" >> /root/.vimrc
