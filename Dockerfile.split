@@ -48,7 +48,7 @@ RUN curl -L -o /etc/bash_completion.d/kubectx https://github.com/ahmetb/kubectx/
 RUN curl -L -o /etc/bash_completion.d/kubens https://github.com/ahmetb/kubectx/raw/master/completion/kubens.bash
 
 # install k3d
-RUN curl -s https://raw.githubusercontent.com/rancher/k3d/main/install.sh | TAG=v4.4.8 bash
+RUN curl -s https://raw.githubusercontent.com/rancher/k3d/main/install.sh | TAG=v5.4.1 bash
 
 # install hadolint
 RUN curl -L  "https://github.com/hadolint/hadolint/releases/download/`curl -s https://api.github.com/repos/hadolint/hadolint/releases | jq .[].name | grep -v rc | head -1 | sed 's/"//g'`/hadolint-Linux-x86_64" -o /usr/local/bin/hadolint
