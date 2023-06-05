@@ -1,4 +1,4 @@
-FROM rockylinux:8.5
+FROM rockylinux:8.8
 
 ENV HOME=/root
 
@@ -21,27 +21,28 @@ RUN echo -e "[google-cloud-sdk]\nname=Google Cloud SDK\nbaseurl=https://packages
 # install docker cli
 RUN rpm -ivh https://download.docker.com/linux/centos/8/x86_64/stable/Packages/docker-ce-cli-20.10.7-3.el8.x86_64.rpm https://download.docker.com/linux/centos/8/x86_64/stable/Packages/docker-scan-plugin-0.8.0-3.el8.x86_64.rpm
 
-# install docker-compose
-RUN curl -L "https://github.com/docker/compose/releases/download/`curl -s https://api.github.com/repos/docker/compose/releases | jq .[].name | grep -v rc | head -1 | sed 's/"//g'`/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-RUN chmod 755 /usr/local/bin/docker-compose
-
 # install tools
 RUN dnf install --nodocs --setopt=install_weak_deps=False -y vim wget openssh-clients net-tools bind-utils tcpdump iproute iputils ethtool iptables nmap-ncat less screen tmux strace ltrace bash-completion yum-utils kubectl jq stress-ng expect psmisc openssl kbd unzip git passwd socat procps-ng
+
+# install docker-compose
+RUN DOWNLOAD_URL=$(curl -s -L https://api.github.com/repos/docker/compose/releases/latest | jq -r '.assets[] | select(.name == "docker-compose-linux-x86_64") | .browser_download_url'); curl -L -s $DOWNLOAD_URL -o /usr/local/bin/docker-compose
+RUN chmod 755 /usr/local/bin/docker-compose
 
 # for japanese
 RUN dnf install --nodocs --setopt=install_weak_deps=False -y glibc-langpack-ja langpacks-ja.noarch langpacks-en glibc-langpack-en glibc-locale-source
 RUN localedef -f UTF-8 -i ja_JP ja_JP.UTF-8
 
 # install yq
-RUN curl -L -o /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/`curl -s https://api.github.com/repos/mikefarah/yq/releases/latest | jq .tag_name | sed 's/"//g'`/yq_linux_amd64
+RUN DOWNLOAD_URL=$(curl -s -L https://api.github.com/repos/mikefarah/yq/releases/latest | jq -r '.assets[] | select(.name == "yq_linux_amd64") | .browser_download_url'); curl -L -s $DOWNLOAD_URL -o /usr/local/bin/yq
+
 RUN chmod 755 /usr/local/bin/yq
 
 # install helm
 RUN curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
 
 # install kubectx kubens
-RUN curl -L -o /usr/local/bin/kubectx https://github.com/ahmetb/kubectx/releases/download/`curl -s https://api.github.com/repos/ahmetb/kubectx/releases | jq .[].name | grep -v rc | head -1 | sed 's/"//g'`/kubectx
-RUN curl -L -o /usr/local/bin/kubens https://github.com/ahmetb/kubectx/releases/download/`curl -s https://api.github.com/repos/ahmetb/kubectx/releases | jq .[].name | grep -v rc | head -1 | sed 's/"//g'`/kubens
+RUN DOWNLOAD_URL=$(curl -s https://api.github.com/repos/ahmetb/kubectx/releases/latest | jq -r '.assets[] | select(.name == "kubectx") | .browser_download_url'); curl -L -s $DOWNLOAD_URL -o /usr/local/bin/kubectx
+RUN DOWNLOAD_URL=$(curl -s https://api.github.com/repos/ahmetb/kubectx/releases/latest | jq -r '.assets[] | select(.name == "kubens") | .browser_download_url'); curl -L -s $DOWNLOAD_URL -o /usr/local/bin/kubens
 RUN chmod 755 /usr/local/bin/kubectx
 RUN chmod 755 /usr/local/bin/kubens
 RUN curl -L -o /etc/bash_completion.d/kubectx https://github.com/ahmetb/kubectx/raw/master/completion/kubectx.bash
@@ -51,40 +52,41 @@ RUN curl -L -o /etc/bash_completion.d/kubens https://github.com/ahmetb/kubectx/r
 RUN curl -s https://raw.githubusercontent.com/rancher/k3d/main/install.sh | TAG=v5.4.1 bash
 
 # install hadolint
-RUN curl -L  "https://github.com/hadolint/hadolint/releases/download/`curl -s https://api.github.com/repos/hadolint/hadolint/releases | jq .[].name | grep -v rc | head -1 | sed 's/"//g'`/hadolint-Linux-x86_64" -o /usr/local/bin/hadolint
+RUN DOWNLOAD_URL=$(curl -s https://api.github.com/repos/hadolint/hadolint/releases/latest | jq -r '.assets[] | select(.name == "hadolint-Linux-x86_64") | .browser_download_url'); curl -L -s $DOWNLOAD_URL -o /usr/local/bin/hadolint
 RUN chmod 755 /usr/local/bin/hadolint
 
 # install docui
-RUN curl -L "https://github.com/skanehira/docui/releases/download/`curl -s https://api.github.com/repos/skanehira/docui/releases | jq .[].name | grep -v rc | head -1 | sed 's/"//g'`/docui_`curl -s https://api.github.com/repos/skanehira/docui/releases | jq .[].name | grep -v rc | head -1 | sed 's/"//g'`_Linux_x86_64.tar.gz" -o /tmp/docui.tar.gz
+RUN DOWNLOAD_URL=$(curl -s https://api.github.com/repos/skanehira/docui/releases/latest | jq -r '.assets[] | select(.name | test("docui_.*_Linux_x86_64.tar.gz")) | .browser_download_url'); curl -L -s $DOWNLOAD_URL -o /tmp/docui.tar.gz
 RUN tar zxvf /tmp/docui.tar.gz -O docui > /usr/local/bin/docui
 RUN chmod 755 /usr/local/bin/docui
 RUN rm -f /tmp/docui.tar.gz
 
 # install k9s
-RUN curl -L "https://github.com/derailed/k9s/releases/download/`curl -s https://api.github.com/repos/derailed/k9s/releases | jq .[].name | grep -v rc | head -1 | sed 's/"//g'`/k9s_Linux_x86_64.tar.gz" -o /tmp/k9s.tar.gz
+RUN DOWNLOAD_URL=$(curl -s https://api.github.com/repos/derailed/k9s/releases/latest | jq -r '.assets[] | select(.name == "k9s_Linux_amd64.tar.gz") | .browser_download_url'); curl -L -s $DOWNLOAD_URL -o /tmp/k9s.tar.gz
 RUN tar zxvf /tmp/k9s.tar.gz -O k9s > /usr/local/bin/k9s
 RUN chmod 755 /usr/local/bin/k9s
 RUN rm -f /tmp/k9s.tar.gz
 
 # install stern
-RUN curl -L "https://github.com/wercker/stern/releases/download/`curl -s https://api.github.com/repos/wercker/stern/releases | jq .[].name | grep -v rc | head -1 | sed 's/"//g'`/stern_linux_amd64" -o /usr/local/bin/stern
+RUN DOWNLOAD_URL=$(curl -s https://api.github.com/repos/stern/stern/releases/latest | jq -r '.assets[] | select(.name == "stern_1.25.0_linux_amd64.tar.gz") | .browser_download_url'); curl -L -s $DOWNLOAD_URL -o /tmp/stern.tar.gz
+RUN tar zxvf /tmp/stern.tar.gz -O stern > /usr/local/bin/stern
 RUN chmod 755 /usr/local/bin/stern
 
 # install kubeval
-RUN curl -L "https://github.com/instrumenta/kubeval/releases/download/`curl -s https://api.github.com/repos/instrumenta/kubeval/releases | jq .[].name | grep -v rc | head -1 | sed 's/"//g'`/kubeval-linux-amd64.tar.gz" -o /tmp/kubeval.tar.gz
+RUN DOWNLOAD_URL=$(curl -s https://api.github.com/repos/instrumenta/kubeval/releases/latest | jq -r '.assets[] | select(.name == "kubeval-linux-amd64.tar.gz") | .browser_download_url'); curl -L -s $DOWNLOAD_URL -o /tmp/kubeval.tar.gz
 RUN tar zxvf /tmp/kubeval.tar.gz -O kubeval > /usr/local/bin/kubeval
 RUN chmod 755 /usr/local/bin/kubeval
 RUN rm -f /tmp/kubeval.tar.gz
 
 # install kube-score
-RUN curl -L "https://github.com/zegl/kube-score/releases/download/`curl -s https://api.github.com/repos/zegl/kube-score/releases | jq .[].name | grep -v rc | head -1 | sed 's/"//g'`/kube-score_`curl -s https://api.github.com/repos/zegl/kube-score/releases | jq .[].name | grep -v rc | head -1 | sed 's/"//g' | sed 's/v//g'`_linux_amd64" -o /usr/local/bin/kube-score
+RUN DOWNLOAD_URL=$(curl -s https://api.github.com/repos/zegl/kube-score/releases/latest | jq -r '.assets[] | select(.name == "kube-score_1.16.1_linux_amd64") | .browser_download_url'); curl -L -s $DOWNLOAD_URL -o /usr/local/bin/kube-score
 RUN chmod 755 /usr/local/bin/kube-score
 
 # install kube-ps1
 RUN curl -L https://raw.githubusercontent.com/jonmosco/kube-ps1/master/kube-ps1.sh -o /usr/local/bin/kube-ps1.sh
 
 # install crane
-RUN curl -L "https://github.com/google/go-containerregistry/releases/download/`curl -s https://api.github.com/repos/google/go-containerregistry/releases | jq .[].name | grep -v rc | head -1 | sed 's/"//g'`/go-containerregistry_Linux_x86_64.tar.gz"  -o /tmp/crane.tar.gz
+RUN DOWNLOAD_URL=$(curl -s https://api.github.com/repos/google/go-containerregistry/releases/latest | jq -r '.assets[] | select(.name == "go-containerregistry_Linux_x86_64.tar.gz") | .browser_download_url'); curl -L -s $DOWNLOAD_URL -o /tmp/crane.tar.gz
 RUN tar zxvf /tmp/crane.tar.gz -O crane > /usr/local/bin/crane
 RUN chmod 755 /usr/local/bin/crane
 RUN rm -f /tmp/crane.tar.gz
