@@ -71,6 +71,7 @@ RUN rm -f /tmp/k9s.tar.gz
 RUN DOWNLOAD_URL=$(curl -s https://api.github.com/repos/stern/stern/releases/latest | jq -r '.assets[] | select(.name == "stern_1.25.0_linux_amd64.tar.gz") | .browser_download_url'); curl -L -s $DOWNLOAD_URL -o /tmp/stern.tar.gz
 RUN tar zxvf /tmp/stern.tar.gz -O stern > /usr/local/bin/stern
 RUN chmod 755 /usr/local/bin/stern
+RUN rm -f stern.tar.gz
 
 # install kubeval
 RUN DOWNLOAD_URL=$(curl -s https://api.github.com/repos/instrumenta/kubeval/releases/latest | jq -r '.assets[] | select(.name == "kubeval-linux-amd64.tar.gz") | .browser_download_url'); curl -L -s $DOWNLOAD_URL -o /tmp/kubeval.tar.gz
@@ -153,7 +154,7 @@ RUN kubectl completion bash >> /etc/bash_completion.d/kubectl
 RUN mkdir /root/.kube
 
 # cleanup
-RUN rm -f /root/anaconda-ks.cfg
+RUN rm -f /root/anaconda-ks.cfg /root/anaconda-post.log /root/original-ks.cfg
 RUN dnf clean all
 
 CMD ["/usr/local/bin/pause"]
