@@ -68,7 +68,7 @@ RUN chmod 755 /usr/local/bin/k9s
 RUN rm -f /tmp/k9s.tar.gz
 
 # install stern
-RUN DOWNLOAD_URL=$(curl -s https://api.github.com/repos/stern/stern/releases/latest | jq -r '.assets[] | select(.name == "stern_1.25.0_linux_amd64.tar.gz") | .browser_download_url'); curl -L -s $DOWNLOAD_URL -o /tmp/stern.tar.gz
+RUN DOWNLOAD_URL=$(curl -s https://api.github.com/repos/stern/stern/releases/latest | jq -r '.assets[] | select(.name | test("stern_.*_linux_amd64.tar.gz")) | .browser_download_url'); curl -L -s $DOWNLOAD_URL -o /tmp/stern.tar.gz
 RUN tar zxvf /tmp/stern.tar.gz -O stern > /usr/local/bin/stern
 RUN chmod 755 /usr/local/bin/stern
 RUN rm -f stern.tar.gz
@@ -80,7 +80,7 @@ RUN chmod 755 /usr/local/bin/kubeval
 RUN rm -f /tmp/kubeval.tar.gz
 
 # install kube-score
-RUN DOWNLOAD_URL=$(curl -s https://api.github.com/repos/zegl/kube-score/releases/latest | jq -r '.assets[] | select(.name == "kube-score_1.16.1_linux_amd64") | .browser_download_url'); curl -L -s $DOWNLOAD_URL -o /usr/local/bin/kube-score
+RUN DOWNLOAD_URL=$(curl -s https://api.github.com/repos/zegl/kube-score/releases/latest | jq -r '.assets[] | select(.name | test("kube-score_.*_linux_amd64$")) | .browser_download_url'); curl -L -s $DOWNLOAD_URL -o /usr/local/bin/kube-score
 RUN chmod 755 /usr/local/bin/kube-score
 
 # install kube-ps1
