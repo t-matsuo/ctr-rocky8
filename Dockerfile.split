@@ -109,15 +109,12 @@ RUN chmod 755 /usr/local/bin/awless
 RUN rm -f /tmp/awless.tar.gz
 
 # install krew
-RUN set -x; cd "$(mktemp -d)" && \
-    OS="$(uname | tr '[:upper:]' '[:lower:]')" && \
-    ARCH="$(uname -m | sed -e 's/x86_64/amd64/' -e 's/\(arm\)\(64\)\?.*/\1\2/' -e 's/aarch64$/arm64/')" && \
-    KREW="krew-${OS}_${ARCH}" && \
-    curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/latest/download/${KREW}.tar.gz" && \
-    tar zxvf "${KREW}.tar.gz" && \
-    ./"${KREW}" install krew && \
-    cd -
+RUN curl -L "https://github.com/kubernetes-sigs/krew/releases/latest/download/krew-linux_amd64.tar.gz" -o /tmp/krew.tar.gz
+RUN tar zxvf /tmp/krew.tar.gz -O ./krew-linux_amd64 > /tmp/krew
+RUN chmod 755 /tmp/krew
+RUN /tmp/krew install krew
 RUN echo 'export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"' >> /root/.bashrc
+RUN rm -f /tmp/krew.tar.gz /tmp/krew
 
 # install krew plugins
 RUN PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH" kubectl krew install neat
