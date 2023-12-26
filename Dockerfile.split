@@ -135,6 +135,30 @@ RUN PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH" kubectl krew install view-secret
 RUN yum-config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
 RUN yum -y install terraform
 
+# install skaffold
+RUN curl -Lo skaffold https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64 && chmod +x skaffold && mv skaffold /usr/local/bin
+
+# install Velero cli
+RUN DOWNLOAD_URL=$(curl -s https://api.github.com/repos/vmware-tanzu/velero/releases/latest | jq -r '.assets[] | select(.name | test("linux-amd64.tar.gz")) | .browser_download_url'); curl -L -s $DOWNLOAD_URL -o /tmp/velero.tar.gz
+RUN mkdir /tmp/velero && tar zxvf /tmp/velero.tar.gz --strip-components 1  -C /tmp/velero
+RUN mv /tmp/velero/velero /usr/local/bin/velero
+RUN chmod 755 /usr/local/bin/velero
+RUN rm -rf /tmp/velero*
+
+# install argocd
+RUN curl -s -L https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64 -o /usr/local/bin/argocd
+RUN chmod 755 /usr/local/bin/argocd
+
+# install opa
+RUN curl -s -L https://github.com/open-policy-agent/opa/releases/latest/download/opa_linux_amd64_static -o /usr/local/bin/opa
+RUN chmod 755 /usr/local/bin/opa
+
+# install conftest
+RUN DOWNLOAD_URL=$(curl -s https://api.github.com/repos/open-policy-agent/conftest/releases/latest | jq -r '.assets[] | select(.name | test("Linux_x86_64.tar.gz")) | .browser_download_url'); curl -L -s $DOWNLOAD_URL -o /tmp/conftest.tar.gz
+RUN tar zxvf /tmp/conftest.tar.gz -O conftest > /usr/local/bin/conftest
+RUN chmod 755 /usr/local/bin/conftest
+RUN rm -f /tmp/conftest.tar.gz
+
 # my settings
 RUN echo "alias vi='vim'" >> /root/.bashrc
 RUN echo "alias ll='ls -l --color=auto'" >> /root/.bashrc
@@ -155,6 +179,7 @@ RUN echo "set paste" >> /root/.vimrc
 RUN echo "set tabstop=4" >> /root/.vimrc
 RUN cp /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
 RUN kubectl completion bash >> /etc/bash_completion.d/kubectl
+RUN terraform -install-autocomplete
 RUN mkdir /root/.kube
 
 # cleanup
