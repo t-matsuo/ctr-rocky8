@@ -8,6 +8,8 @@ COPY ./k3d/* /usr/local/bin/
 COPY ./pause /usr/local/bin/
 COPY ./cocker /usr/local/bin/
 
+#__BULDKIT_MARKER__RUN --mount=type=cache,id=rocky8,target=/var/cache/dnf --mount=type=cache,id=rocky8,target=/var/lib/dnf --mount=type=cache,id=rocky8,target=/root/.cache --mount=type=cache,id=rocky8,target=/root/.npm echo "##### Using buildkit #####"
+
 RUN dnf --nodocs --setopt=install_weak_deps=False -y update && dnf --nodocs --setopt=install_weak_deps=False -y install epel-release
 
 # add Azure and VSCode repository
@@ -184,6 +186,5 @@ RUN mkdir /root/.kube
 
 # cleanup
 RUN rm -f /root/anaconda-ks.cfg /root/anaconda-post.log /root/original-ks.cfg
-RUN dnf clean all
 
 CMD ["/usr/local/bin/pause"]
