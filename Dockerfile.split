@@ -97,6 +97,10 @@ RUN tar zxvf /tmp/crane.tar.gz -O crane > /usr/local/bin/crane
 RUN chmod 755 /usr/local/bin/crane
 RUN rm -f /tmp/crane.tar.gz
 
+# install azure-cli and ssh extention
+RUN dnf install --nodocs --setopt=install_weak_deps=False -y azure-cli
+RUN az extension add --name ssh
+
 # install AWS CLI v2
 RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "/tmp/awscliv2.zip"
 RUN unzip /tmp/awscliv2.zip -d /tmp/
