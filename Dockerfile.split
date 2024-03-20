@@ -25,7 +25,7 @@ RUN echo -e "[google-cloud-sdk]\nname=Google Cloud SDK\nbaseurl=https://packages
 RUN rpm -ivh https://download.docker.com/linux/centos/8/x86_64/stable/Packages/docker-ce-cli-20.10.7-3.el8.x86_64.rpm https://download.docker.com/linux/centos/8/x86_64/stable/Packages/docker-scan-plugin-0.8.0-3.el8.x86_64.rpm
 
 # install tools
-RUN dnf install --nodocs --setopt=install_weak_deps=False -y vim wget openssh-clients net-tools bind-utils tcpdump iproute iputils ethtool iptables nmap-ncat less screen tmux strace ltrace bash-completion yum-utils kubectl jq stress-ng expect psmisc openssl kbd unzip git passwd socat procps-ng
+RUN dnf install --nodocs --setopt=install_weak_deps=False -y vim wget openssh-clients net-tools bind-utils tcpdump iproute iputils ethtool iptables nmap-ncat less screen tmux strace ltrace bash-completion yum-utils kubectl jq stress-ng expect psmisc openssl kbd unzip git passwd socat procps-ng traceroute
 
 # install docker-compose
 RUN curl -L -s https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose
