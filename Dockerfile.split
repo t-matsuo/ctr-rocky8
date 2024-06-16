@@ -25,7 +25,7 @@ RUN echo -e "[google-cloud-sdk]\nname=Google Cloud SDK\nbaseurl=https://packages
 RUN rpm -ivh https://download.docker.com/linux/centos/8/x86_64/stable/Packages/docker-ce-cli-20.10.7-3.el8.x86_64.rpm https://download.docker.com/linux/centos/8/x86_64/stable/Packages/docker-scan-plugin-0.8.0-3.el8.x86_64.rpm
 
 # install tools
-RUN dnf install --nodocs --setopt=install_weak_deps=False -y vim wget openssh-clients net-tools bind-utils tcpdump iproute iputils ethtool iptables nmap-ncat less screen tmux strace ltrace bash-completion yum-utils kubectl jq stress-ng expect psmisc openssl kbd unzip git passwd socat procps-ng traceroute reptyr
+RUN dnf install --nodocs --setopt=install_weak_deps=False -y vim wget openssh-clients net-tools bind-utils tcpdump iproute iputils ethtool iptables nmap-ncat less screen tmux strace ltrace bash-completion yum-utils kubectl jq stress-ng expect psmisc openssl kbd unzip git passwd socat procps-ng traceroute reptyr xz
 
 # install docker-compose
 RUN curl -L -s https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose
@@ -164,6 +164,18 @@ RUN DOWNLOAD_URL=$(curl -s https://api.github.com/repos/open-policy-agent/confte
 RUN tar zxvf /tmp/conftest.tar.gz -O conftest > /usr/local/bin/conftest
 RUN chmod 755 /usr/local/bin/conftest
 RUN rm -f /tmp/conftest.tar.gz
+
+# install Azure kubelogin
+RUN curl -s -L https://github.com/Azure/kubelogin/releases/latest/download/kubelogin-linux-amd64.zip -o /tmp/kubelogin.zip
+RUN unzip /tmp/kubelogin.zip -d /tmp && mv /tmp/bin/linux_amd64/kubelogin /usr/local/bin/kubelogin
+RUN chmod 755 /usr/local/bin/kubelogin
+RUN rm -rf /tmp/kubelogin.zip /tmp/bin
+
+# install jnv
+RUN curl -s -L https://github.com/ynqa/jnv/releases/latest/download/jnv-x86_64-unknown-linux-gnu.tar.xz -o /tmp/jnv.tar.xz
+RUN tar xvfJ /tmp/jnv.tar.xz -O jnv-x86_64-unknown-linux-gnu/jnv > /usr/local/bin/jnv
+RUN chmod 755 /usr/local/bin/jnv
+RUN rm -rf /tmp/jnv.tar.gz
 
 # my settings
 RUN echo "alias vi='vim'" >> /root/.bashrc
