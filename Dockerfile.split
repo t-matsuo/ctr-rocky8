@@ -177,6 +177,12 @@ RUN tar xvfJ /tmp/jnv.tar.xz -O jnv-x86_64-unknown-linux-gnu/jnv > /usr/local/bi
 RUN chmod 755 /usr/local/bin/jnv
 RUN rm -rf /tmp/jnv.tar.gz
 
+# install delta
+RUN DOWNLOAD_URL=$(curl -s https://api.github.com/repos/dandavison/delta/releases/latest | jq -r '.assets[] | select(.name | test("x86_64.*linux-gnu")) | .browser_download_url'); curl -L -s $DOWNLOAD_URL -o /tmp/delta.tar.gz
+RUN tar xf /tmp/delta.tar.gz -O $(tar tf /tmp/delta.tar.gz | grep "delta$") > /usr/local/bin/delta
+RUN chmod 755 /usr/local/bin/delta
+RUN rm -rf /tmp/delta.tar.gz
+
 # my settings
 RUN echo "alias vi='vim'" >> /root/.bashrc
 RUN echo "alias ll='ls -l --color=auto'" >> /root/.bashrc
