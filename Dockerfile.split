@@ -68,7 +68,6 @@ RUN rm -f /tmp/docui.tar.gz
 
 # install k9s
 RUN curl -L -s https://github.com/derailed/k9s/releases/latest/download/k9s_Linux_amd64.tar.gz -o /tmp/k9s.tar.gz
-
 RUN tar zxvf /tmp/k9s.tar.gz -O k9s > /usr/local/bin/k9s
 RUN chmod 755 /usr/local/bin/k9s
 RUN rm -f /tmp/k9s.tar.gz
@@ -186,6 +185,19 @@ RUN tar xf /tmp/delta.tar.gz -O $(tar tf /tmp/delta.tar.gz | grep "delta$") > /u
 RUN chmod 755 /usr/local/bin/delta
 RUN rm -rf /tmp/delta.tar.gz
 
+# vim settings
+RUN mkdir -p /root/.vim/plugins
+
+RUN curl -L -s https://github.com/mechatroner/rainbow_csv/archive/refs/tags/4.3.0.tar.gz -o /tmp/rainbow_csv.tar.gz
+RUN tar zxvf /tmp/rainbow_csv.tar.gz -C /root/.vim/plugins/
+RUN mv /root/.vim/plugins/rainbow_csv-4.3.0 /root/.vim/plugins/rainbow_csv
+RUN rm -f /tmp/rainbow_csv.tar.gz
+
+RUN curl -L -s https://github.com/tomtom/tcomment_vim/archive/refs/tags/4.00.tar.gz -o /tmp/tcomment.tar.gz
+RUN tar zxvf /tmp/tcomment.tar.gz -C /root/.vim/plugins/
+RUN mv /root/.vim/plugins/tcomment_vim-4.00 /root/.vim/plugins/tcomment
+RUN rm -f /tmp/tcomment.tar.gz
+
 # my settings
 RUN echo "alias vi='vim'" >> /root/.bashrc
 RUN echo "alias ll='ls -l --color=auto'" >> /root/.bashrc
@@ -203,14 +215,11 @@ RUN echo 'shell "/bin/bash"' >> /root/.screenrc
 RUN echo 'termcapinfo xterm* ti@:te@' >> /root/.screenrc
 RUN echo 'hardstatus string '\''%{gk}[%{G}%H%{g}]  %{wk}%?%-Lw%?%{=b kR}(%{W}%n*%f %t%?(%u)%?%{=b kR})%{= kw}%?%+Lw%?'\' >> /root/.screenrc
 RUN echo 'hardstatus alwayslastline' >> /root/.screenrc
-RUN echo "set background=dark" >> /root/.vimrc
-RUN echo "set pastetoggle=<f2>" >> /root/.vimrc
-RUN echo "set paste" >> /root/.vimrc
-RUN echo "set tabstop=4" >> /root/.vimrc
 RUN cp /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
 RUN kubectl completion bash >> /etc/bash_completion.d/kubectl
 RUN terraform -install-autocomplete
 RUN mkdir /root/.kube
+COPY ./vim/vimrc /root/.vimrc
 
 # cleanup
 RUN rm -f /root/anaconda-ks.cfg /root/anaconda-post.log /root/original-ks.cfg

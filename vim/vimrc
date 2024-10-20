@@ -1,0 +1,244 @@
+"functions--------------------------------------------------------------
+function! HighlightWordUnderCursor()
+    if getline(".")[col(".")-1] !~# '[[:punct:][:blank:]]'
+        exec 'match' 'Search' '/\V\<'.expand('<cword>').'\>/'
+    else
+        match none
+    endif
+endf
+
+function! Has_plugin(plugin)
+  for line in split(execute(':echo &runtimepath'),",")
+      "UNIX系の場合
+      if (substitute(line,'.*/','','g') == a:plugin)
+        return 1
+        break
+      endif
+      "Windowsの場合
+      if (substitute(line,'.*\','','g') == a:plugin)
+        return 1
+        break
+      endif
+  endfor
+  return 0
+endf
+
+"default ----------------------------------------------------------
+"load plugins
+if !empty(glob('~/.vim/plugins/*'))
+  for s:path in split(glob('~/.vim/plugins/*'), '\n')
+    if s:path !~# '\~$' && isdirectory(s:path)
+      let &runtimepath = &runtimepath.','.s:path
+    endif
+  endfor
+  unlet s:path
+endif
+
+"status line------
+set laststatus=2
+"filename
+set statusline=%F
+"is_changed
+set statusline+=%m
+"is_read_only
+set statusline+=%r
+"is_help_page
+set statusline+=%h
+"is_preview
+set statusline+=%w
+"file encoding
+set statusline+=\ [%{&fileencoding}]
+"file type
+set statusline+=[%{&filetype}]
+"char code
+set statusline+=\ [Code=%B]
+"set right
+set statusline+=%=
+"line
+set statusline+=[L=%l/%L]
+"column
+set statusline+=[C=%v]
+
+"use clipboard
+"set clipboard=unnamed,autoselect
+
+"viminfo
+"set viminfo=
+"no swap
+set noswapfile
+"no backup file
+set nobackup
+"no undo file
+set noundofile
+
+"show long line
+set display=lastline
+
+"colorscheme
+colorscheme default
+set background=dark
+
+"syntax
+syntax on
+
+"not show tab,space,cr
+set nolist
+set listchars=tab:»˗,trail:_,eol:↲,extends:»,precedes:«,nbsp:%
+
+"show current line and column
+set cursorline
+set cursorcolumn
+
+"no line number
+set nonumber
+
+"default indent size
+set tabstop=4
+
+"auto indent size
+set shiftwidth=4
+
+"disalbe autoindent
+set noautoindent
+set nosmartindent
+set nocindent
+set indentexpr=
+set paste
+
+"tab -> space
+set expandtab
+
+"hilight search
+set hlsearch
+
+"controling backspace
+set backspace=2
+
+"toggle auto indent <F11>
+set pastetoggle=<f11>
+
+"show double wide char
+if exists('&ambiwidth')
+  set ambiwidth=double
+endif
+
+"Maximum number of items to show in the popup menu
+set pumheight=10
+"Kemap----------------------------------------------------
+""Normal mode------
+nnoremap * *N
+
+"cancel search hilight with Ctrl-c x2
+nnoremap  <C-c><C-c> :<C-u>nohlsearch<cr><Esc>
+"insert/delete indent
+nnoremap <TAB> v><Esc>
+nnoremap <S-TAB> v<<Esc>
+
+if Has_plugin('tcomment')
+    nnoremap <C-\><C-\> :TComment<cr>
+endif
+
+""insert mode---------
+"delete indent
+inoremap <S-TAB> <Esc>v<<Esc>a
+
+"visual mode----------
+"insert/delete indent and re-select
+vnoremap > >gv
+vnoremap < <gv
+"insert/delete indent with tab, shift-tab
+vmap <TAB> >
+vmap <S-TAB> <
+
+if Has_plugin('tcomment')
+    vnoremap <C-\><C-\> :TCommentMaybeInline<cr>gv
+endif
+
+"autocmd-------------------------------------------------------
+augroup myautocmd
+    autocmd! myautocmd
+
+    "wide space
+    autocmd BufNew,BufRead,VimEnter * syntax match JISX0208Space "　" display containedin=ALL
+    autocmd ColorScheme,VimEnter * hi JISX0208Space term=underline ctermbg=238 guibg=#114422
+
+    "head and tail space
+    "autocmd BufNew,BufRead,VimEnter * syntax match SOLSpace "^ \+" display containedin=ALL
+    autocmd BufNew,BufRead,VimEnter * syntax match SOLSpace " \+$" display containedin=ALL
+    autocmd ColorScheme,VimEnter * hi SOLSpace term=underline ctermbg=52 guibg=#331133
+
+    "tab
+    autocmd BufNew,BufRead,VimEnter * syntax match Tab "\t" display containedin=ALL
+    autocmd ColorScheme,VimEnter * hi Tab term=underline ctermbg=234 guibg=#202000
+
+    "non text char
+    autocmd ColorScheme,VimEnter * hi NonText    ctermbg=None ctermfg=59 guibg=NONE guifg=Gray
+    autocmd ColorScheme,VimEnter * hi SpecialKey ctermbg=None ctermfg=59 guibg=NONE guifg=Gray
+
+    "popup menu
+    autocmd ColorScheme,VimEnter * hi Pmenu       ctermbg=Gray ctermfg=Black guibg=Gray guifg=Black "非選択メニューの色
+    autocmd ColorScheme,VimEnter * hi PmenuSel    ctermbg=Red  ctermfg=White guibg=Red  guifg=White "選択メニューの色
+    autocmd ColorScheme,VimEnter * hi PmenuSbar   ctermbg=Gray               guibg=Gray             "スクロールバーの色
+    autocmd ColorScheme,VimEnter * hi PmenuThumb  ctermbg=Red                guibg=Red              "スクロールレバーの色
+
+    "current line
+    autocmd ColorScheme,VimEnter * hi CursorLine term=underline cterm=underline ctermbg=None gui=underline guibg=NONE
+
+    "current column
+    autocmd ColorScheme,VimEnter * hi CursorColumn term=None cterm=None ctermbg=234 gui=None guibg=#303030
+
+    "disable comment format
+    autocmd FileType * set comments=
+
+    "status line at insert mode
+    autocmd InsertEnter * hi StatusLine ctermfg=Blue   guifg=#6666ff "挿入モード時の色
+    autocmd InsertLeave * hi StatusLine ctermfg=White  guifg=White   "通常モード時の色
+augroup END
+
+" detect encode ---------------
+if &encoding !=# 'utf-8'
+  set encoding=japan
+  set fileencoding=japan
+endif
+if has('iconv')
+  let s:enc_euc = 'euc-jp'
+  let s:enc_jis = 'iso-2022-jp'
+  if iconv("\x87\x64\x87\x6a", 'cp932', 'eucjp-ms') ==# "\xad\xc5\xad\xcb"
+    let s:enc_euc = 'eucjp-ms'
+    let s:enc_jis = 'iso-2022-jp-3'
+  elseif iconv("\x87\x64\x87\x6a", 'cp932', 'euc-jisx0213') ==# "\xad\xc5\xad\xcb"
+    let s:enc_euc = 'euc-jisx0213'
+    let s:enc_jis = 'iso-2022-jp-3'
+  endif
+  if &encoding ==# 'utf-8'
+    let s:fileencodings_default = &fileencodings
+    let &fileencodings = s:enc_jis .','. s:enc_euc .',cp932'
+    let &fileencodings = &fileencodings .','. s:fileencodings_default
+    unlet s:fileencodings_default
+  else
+    let &fileencodings = &fileencodings .','. s:enc_jis
+    set fileencodings+=utf-8,ucs-2le,ucs-2
+    if &encoding =~# '^\(euc-jp\|euc-jisx0213\|eucjp-ms\)$'
+      set fileencodings+=cp932
+      set fileencodings-=euc-jp
+      set fileencodings-=euc-jisx0213
+      set fileencodings-=eucjp-ms
+      let &encoding = s:enc_euc
+      let &fileencoding = s:enc_euc
+    else
+      let &fileencodings = &fileencodings .','. s:enc_euc
+    endif
+  endif
+  unlet s:enc_euc
+  unlet s:enc_jis
+endif
+
+if has('autocmd')
+  function! AU_ReCheck_FENC()
+    if &fileencoding =~# 'iso-2022-jp' && search("[^\x01-\x7e]", 'n') == 0
+      let &fileencoding=&encoding
+    endif
+  endfunction
+  autocmd BufReadPost * call AU_ReCheck_FENC()
+endif
+set fileformats=unix,dos,mac
