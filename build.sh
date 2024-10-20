@@ -16,4 +16,4 @@ else
 fi
 
 ./cocker $CC_OPTION _Dockerfile.split.tmp > _Dockerfile
-$BUILDER build -t tmatsuo/rocky8 -f _Dockerfile .
+$BUILDER build -t docker.io/tmatsuo/rocky8 -f _Dockerfile .
